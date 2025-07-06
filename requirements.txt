@@ -7,3 +7,6 @@ gensim
 networkx
 matplotlib
 torch_geometric
+igraph
+seaborn
+pycairo

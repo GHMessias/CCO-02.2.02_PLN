@@ -67,7 +67,7 @@ Conexão entre 95 e 153 - Palavras-chave em comum: presidente Jair Bolsonaro
 Conexão entre 95 e 176 - Palavras-chave em comum: presidente Jair Bolsonaro
 Conexão entre 95 e 192 - Palavras-chave em comum: presidente Jair Bolsonaro
 Conexão entre 97 e 99 - Palavras-chave em comum: Paulo Guedes
-Conexão entre 97 e 109 - Palavras-chave em comum: ministro da Economia, Paulo Guedes
+Conexão entre 97 e 109 - Palavras-chave em comum: Paulo Guedes, ministro da Economia
 Conexão entre 98 e 140 - Palavras-chave em comum: Câmara dos Deputados
 Conexão entre 99 e 109 - Palavras-chave em comum: Paulo Guedes
 Conexão entre 101 e 139 - Palavras-chave em comum: Supremo Tribunal Federal, Tribunal Federal
@@ -76,7 +76,7 @@ Conexão entre 101 e 162 - Palavras-chave em comum: Supremo Tribunal Federal
 Conexão entre 101 e 169 - Palavras-chave em comum: Supremo Tribunal Federal
 Conexão entre 101 e 174 - Palavras-chave em comum: Supremo Tribunal Federal, Tribunal Federal
 Conexão entre 105 e 109 - Palavras-chave em comum: presidente Jair Bolsonaro
-Conexão entre 105 e 118 - Palavras-chave em comum: presidente Jair Bolsonaro, Jair Bolsonaro embarcou
+Conexão entre 105 e 118 - Palavras-chave em comum: Jair Bolsonaro embarcou, presidente Jair Bolsonaro
 Conexão entre 105 e 120 - Palavras-chave em comum: presidente Jair Bolsonaro
 Conexão entre 105 e 122 - Palavras-chave em comum: presidente Jair Bolsonaro
 Conexão entre 105 e 136 - Palavras-chave em comum: presidente Jair Bolsonaro

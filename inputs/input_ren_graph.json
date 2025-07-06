@@ -1,0 +1,4 @@
+{
+    "benchmark_dataset_path" : "dataset/llm_processed_data.tsv",
+    "graph_generator" : "ren"
+}

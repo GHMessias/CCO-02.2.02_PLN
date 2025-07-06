@@ -11,7 +11,7 @@ from gensim.models import Word2Vec, Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
 import spacy
 
-def REM_graph(df, text_column='news', threshold=1, log_file='graph_connections.txt'):
+def REM_graph(df, text_column='news', threshold=5, log_file='graph_connections.txt'):
     """
     Gera um edge_index conectando textos que compartilham entidades nomeadas e salva um arquivo
     de justificativa para cada aresta.

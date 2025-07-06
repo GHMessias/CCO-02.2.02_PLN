@@ -10,12 +10,14 @@ from sklearn.metrics import classification_report, confusion_matrix, f1_score
 import re
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
+import igraph as ig
+import os
 
 def get_args():
     parser = argparse.ArgumentParser(description="Descrição do seu programa.")
 
     parser.add_argument('--config', type=str, help='Path to the JSON config file with parameters')
-
+    parser.add_argument('--data', type = str, help = 'data salva para o script bash gerar os logs')
     parser.add_argument('--gen_samples', action='store_true', help='Chama a função de geração de amostras')
     parser.add_argument('--gen_samples_random_state', type=int, default=42, help='random_state da geração de amostra')
     parser.add_argument('--evaluate_sample', action = 'store_true', help = 'Avalia a sample gerada por --gen_sample')
@@ -128,7 +130,7 @@ def has_duplicate_edges(edge_index: torch.Tensor) -> bool:
     # Compara o número total de arestas com o número de arestas únicas
     return len(edge_tuples) != len(set(edge_tuples))
 
-def train_gae(data, gae_model, optimizer, epochs, verbose = True):
+def train_gae(data, gae_model, optimizer, epochs, verbose = False):
     for e in range(epochs):
             optimizer.zero_grad()
             H_L = gae_model.encode(data.x.float(), data.edge_index)
@@ -139,18 +141,17 @@ def train_gae(data, gae_model, optimizer, epochs, verbose = True):
             optimizer.step()
     return
 
-def train_and_evaluate_svm(x: torch.Tensor, y: torch.Tensor, test_size=0.5, random_seed=100):
+def train_and_evaluate_svm(x: torch.Tensor, y: torch.Tensor, modelname: str, path: str, test_size=0.5, random_seed=100):
     """
-    Divide os dados em treino e teste, treina uma SVM e avalia usando F1-score e outras métricas.
+    Divide os dados em treino e teste, treina uma SVM e salva o relatório de classificação em um arquivo de texto.
 
     Parâmetros:
     - x (torch.Tensor): Features numéricas (shape: [n amostras, n features])
     - y (torch.Tensor): Rótulos/classes (shape: [n amostras])
+    - modelname (str): Nome do modelo (usado para nomear o arquivo)
+    - path (str): Caminho do diretório onde o arquivo será salvo
     - test_size (float): Proporção do conjunto de teste
     - random_seed (int): Semente para reprodutibilidade
-
-    Retorna:
-    - None (imprime as métricas)
     """
 
     # Converte para numpy
@@ -170,14 +171,22 @@ def train_and_evaluate_svm(x: torch.Tensor, y: torch.Tensor, test_size=0.5, rand
     y_pred = clf.predict(X_test)
 
     # Avaliação
-    print("=== Matriz de Confusão ===")
-    print(confusion_matrix(y_test, y_pred))
-
-    print("\n=== Relatório de Classificação ===")
-    print(classification_report(y_test, y_pred))
-
+    report = classification_report(y_test, y_pred)
     f1 = f1_score(y_test, y_pred, average='weighted')
-    print(f"\nF1 Score (ponderado): {f1:.4f}")
+
+    # Garante que o diretório exista
+    os.makedirs(path, exist_ok=True)
+
+    # Caminho do arquivo
+    report_path = os.path.join(path, f"{modelname}_classification_report.txt")
+
+    # Salva o relatório
+    with open(report_path, 'w') as f:
+        f.write(f"=== Relatório de Classificação {modelname}===\n")
+        f.write(report)
+        f.write(f"\nF1 Score (ponderado): {f1:.4f}\n")
+
+    print(f"Relatório salvo em: {report_path}")
 
 def carregar_palavras_remocao(caminho_txt):
     """
@@ -247,3 +256,73 @@ def correlacao_de_classes(df, column='news', label_column='classe', num_of_words
     top_scores = score[top_indices]
 
     return list(zip(top_palavras, top_scores))
+
+def generate_class_colors(k):
+    """
+    Gera um dicionário onde a chave é a classe (de 0 a k-1) e o valor é uma cor associada a essa classe.
+    
+    Args:
+        k (int): Número de classes.
+    
+    Returns:
+        dict: Dicionário de cores, com chave=classe e valor=cor.
+    """
+    # Gerar k cores distintas usando uma paleta de cores de 'tab10' do matplotlib
+    colors_map = plt.cm.get_cmap('tab10', k)  # 'tab10' é uma paleta de 10 cores distintas
+    
+    # Criar o dicionário de classes:cores
+    class_colors = {i: colors_map(i) for i in range(k)}
+    
+    return class_colors
+
+# def edge_index_to_igraph(edge_index):
+#     """
+#     Converte um edge_index do PyTorch Geometric para um grafo do igraph, forçando a inclusão de um número fixo de vértices.
+
+#     Args:
+#         edge_index (torch.Tensor): Tensor de shape [2, E] representando as arestas.
+#         num_vertices (int): Número total de vértices no grafo, incluindo os isolados.
+        
+#     Returns:
+#         igraph.Graph: Grafo criado a partir do edge_index.
+#     """
+#     # Verifica se o edge_index tem o formato correto
+#     assert edge_index.size(0) == 2, "O edge_index deve ter 2 linhas (origem e destino das arestas)."
+    
+#     # Converte o edge_index para uma lista de tuplas (origem, destino)
+#     edges = edge_index.t().tolist()
+
+#     # Cria o grafo com o número fixo de vértices
+#     g = ig.Graph(edges=edges)
+
+#     return g
+
+def edge_index_to_igraph(edge_index, num_nodes):
+    """
+    Converte um edge_index do PyTorch Geometric para um grafo do igraph, 
+    forçando a inclusão de um número fixo de vértices, tornando o grafo não direcionado
+    e removendo arestas duplicadas.
+
+    Args:
+        edge_index (torch.Tensor): Tensor de shape [2, E] representando as arestas.
+        num_vertices (int): Número total de vértices no grafo, incluindo os isolados.
+        
+    Returns:
+        igraph.Graph: Grafo criado a partir do edge_index.
+    """
+    # Verifica se o edge_index tem o formato correto
+    assert edge_index.size(0) == 2, "O edge_index deve ter 2 linhas (origem e destino das arestas)."
+    
+    # Converte o edge_index para uma lista de tuplas (origem, destino)
+    edges = edge_index.t().tolist()
+
+    # Cria o grafo com o número fixo de vértices
+    g = ig.Graph(edges=edges, n = num_nodes)
+
+    # Garante que o grafo seja não direcionado
+    g.to_undirected()
+
+    # Remove arestas duplicadas e de loop
+    g.simplify(multiple=True, loops=False)
+
+    return g
