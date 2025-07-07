@@ -1,0 +1,11 @@
+=== Relatório de Classificação yake===
+              precision    recall  f1-score   support
+
+          -1       0.70      0.84      0.76      1800
+           1       0.80      0.65      0.71      1800
+
+    accuracy                           0.74      3600
+   macro avg       0.75      0.74      0.74      3600
+weighted avg       0.75      0.74      0.74      3600
+
+F1 Score (ponderado): 0.7382

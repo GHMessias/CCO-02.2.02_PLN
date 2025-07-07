@@ -1,0 +1,11 @@
+=== Relatório de Classificação none===
+              precision    recall  f1-score   support
+
+          -1       0.83      0.92      0.87       360
+           1       0.91      0.81      0.85       360
+
+    accuracy                           0.86       720
+   macro avg       0.87      0.86      0.86       720
+weighted avg       0.87      0.86      0.86       720
+
+F1 Score (ponderado): 0.8621

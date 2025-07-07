@@ -79,6 +79,8 @@ if args.benchmark:
 
     df = pd.read_csv(args.benchmark_dataset_path, sep = '\t')
 
+    # df = df.sample(5)
+
     palavras_a_remover = carregar_palavras_remocao(args.correlated_words_txt_path)
 
     # Remover as palavras altamente correlacionadas
@@ -97,10 +99,16 @@ if args.benchmark:
         if args.embedding_graph_mode == 'doc2vec':
             edge_index = embedding_sim_graphs(df = df, text_column= 'news', embedding='doc2vec')
             dataset_name = args.graph_generator + '_' + args.embedding_graph_mode
+        if args.embedding_graph_mode == 'bert':
+            model_name = 'neuralmind/bert-base-portuguese-cased'
+            tokenizer = AutoTokenizer.from_pretrained(model_name, do_lower_case=False)
+            model = AutoModel.from_pretrained(model_name)
+            edge_index = embedding_sim_graphs(df = df, text_column='news', embedding='bert', model = model, tokenizer = tokenizer)
+            dataset_name = args.graph_generator + '_' + args.embedding_graph_mode
     if args.graph_generator == 'none':
         edge_index = None
 
-    graph_data = Data(x = x, edge_index = edge_index, y = torch.tensor(df['label']))
+    graph_data = Data(x = x, edge_index = edge_index, y = torch.tensor(df['label'].tolist()))
 
     # Removendo edges duplicados
     if graph_data.edge_index != None:
@@ -115,17 +123,17 @@ if args.benchmark:
     torch.save(graph_data, f'logs/{data_execucao}/graphs/{graph_data.name}.pt')
 
     if graph_data.edge_index != None:
-        encoder = GCN(in_channels = graph_data.x.shape[1], hidden_channels = 32, out_channels = 16)
+        encoder = GCN(in_channels = graph_data.x.shape[1], hidden_channels = 64, out_channels = 32)
         model = GAE(encoder = encoder)
         # TODO: colocar a learning rate (lr) e as epocas como parâmetros no args
-        optimizer = torch.optim.Adam(params=model.parameters(), lr = 0.001)
-        epochs = 100 
-        train_gae(data = graph_data, gae_model = model, optimizer = optimizer, epochs = epochs)
+        optimizer = torch.optim.Adam(params=model.parameters(), lr = 0.01)
+        epochs = 400 
+        train_gae(data = graph_data, gae_model = model, optimizer = optimizer, epochs = epochs, verbose = True)
 
         graph_data.x = model.encode(x, edge_index)
 
     # TODO: salvar esse output
-    train_and_evaluate_svm(x = graph_data.x, y = graph_data.y, modelname = args.graph_generator, path = f'logs/{data_execucao}/scores/{graph_data.name}.txt')
+    train_and_evaluate_svm(x = graph_data.x, y = graph_data.y, modelname = args.graph_generator, path = f'logs/{data_execucao}/scores/{graph_data.name}.txt', test_size = 0.9)
 
     class_colors = {-1:'red', 1:'blue'}
 

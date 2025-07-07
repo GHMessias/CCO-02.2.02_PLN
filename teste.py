@@ -1,24 +1,28 @@
-from graph_gen.graph_gen import *
+import torch
 import pandas as pd
-from utils.utils import *
-from utils.graph_eval import evaluate_graph
+from utils.graph_eval import *
 
-df = pd.read_csv('dataset/sample_trabalho1_tratada_manual.tsv', sep = '\t')
-classes = df['label']
-num_nodes = df.shape[0]
+yake_graph = torch.load('logs/2025-07-07_08-52-34/graphs/yake.pt', weights_only=False)
+embedding_graph = torch.load('logs/2025-07-07_08-52-34/graphs/embedding_word2vec.pt', weights_only = False)
+ren_graph = torch.load('logs/2025-07-07_08-52-34/graphs/ren.pt', weights_only=False)
 
-# # embedding doc2vec euclidean
-# edge_index = embedding_sim_graphs(df, 'news', 'doc2vec', similarity='euclidean')
+num_nodes = pd.read_csv('dataset/2-cleaned_gemini.tsv', sep = '\t').shape[0]
 
-# draw_graph_from_edge_index(edge_index=edge_index, output_path = 'results/graph_images/graph_embedding_sim_graph_doc2vec_cosine.png', classes = df['label'], num_nodes=df.shape[0])
 
-# REM
-edge_index  = REM_graph(df, 'news', log_file='results/graph_logs/graph_log_rem.txt')
+print('Yake Graph')
+print(evaluate_graph(yake_graph.edge_index, num_nodes, yake_graph.y))
+# print('assortatividade ',evaluate_graph(yake_graph.edge_index, num_nodes, yake_graph.y, metric='assortativity'))
+# print('modularidade', evaluate_graph(yake_graph.edge_index, num_nodes, yake_graph.y, metric='modularity'))
+# print('node degree ',evaluate_graph(yake_graph.edge_index, num_nodes, yake_graph.y, metric='node_degree'))
 
-draw_graph_from_edge_index(edge_index=edge_index, output_path = 'results/graph_images/graph_REM.png', classes = df['label'], num_nodes=df.shape[0])
 
-# # Yake (não deu muito certo com essa sample)
-# edge_index = yake_graph(df, 'news', log_file='results/graph_logs/graph_log_yake.txt')
-# draw_graph_from_edge_index(edge_index=edge_index, output_path = 'results/graph_images/graph_yake.png', classes = df['label'], num_nodes=df.shape[0])
 
-print(evaluate_graph(edge_index, num_nodes=num_nodes, classes=classes, metric='node_degree', plot_path='results/graph_distribution/ndd_rem.png'))
+print('embedding_graph')
+print(evaluate_graph(embedding_graph.edge_index, num_nodes, embedding_graph.y))
+# print('assortatividade ',evaluate_graph(embedding_graph.edge_index, num_nodes, embedding_graph.y, metric='assortativity'))
+# print('modularidade', evaluate_graph(embedding_graph.edge_index, num_nodes, embedding_graph.y, metric='modularity'))
+
+print('REN Graph')
+print(evaluate_graph(ren_graph.edge_index, num_nodes, ren_graph.y))
+# print('assortatividade ',evaluate_graph(ren_graph.edge_index, num_nodes, ren_graph.y, metric='assortativity'))
+# print('modularidade', evaluate_graph(ren_graph.edge_index, num_nodes, ren_graph.y, metric='modularity'))

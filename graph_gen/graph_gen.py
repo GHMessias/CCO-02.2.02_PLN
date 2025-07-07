@@ -11,6 +11,48 @@ from gensim.models import Word2Vec, Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
 import spacy
 
+from transformers import AutoTokenizer 
+from transformers import AutoModelForPreTraining 
+from transformers import AutoModel
+
+def bert_embeddings(model, tokenizer, text_list: list[str]):
+    
+    vectors = []
+
+    for text in text_list:
+        inputs = tokenizer(
+            text,
+            return_tensors='pt',
+            truncation=False,
+            max_length=512,
+            add_special_tokens=True
+        )
+        
+        with torch.no_grad():
+            try:
+                outputs = model(**inputs)
+            except RuntimeError:
+                parts = text.split('.')
+                part1 = '.'.join(parts[:len(parts)//2])
+                part2 = '.'.join(parts[len(parts)//2:])
+
+                vectors.append(np.mean(bert_embeddings(model, tokenizer, [part1, part2]), axis=0))
+            else: 
+                last_hidden_state = outputs.last_hidden_state.squeeze(0)  
+                
+                token_mask = inputs['attention_mask'].bool().squeeze(0)  
+                valid_tokens = last_hidden_state[token_mask]
+                
+                content_tokens = valid_tokens[1:-1]
+                if len(content_tokens) == 0:
+                    mean_vector = valid_tokens[0] if len(valid_tokens) > 0 else torch.zeros(model.config.hidden_size)
+                else:
+                    mean_vector = torch.mean(content_tokens, dim=0)
+                    
+                vectors.append(mean_vector.numpy())
+
+    return np.array(vectors)
+
 def REM_graph(df, text_column='news', threshold=5, log_file='graph_connections.txt'):
     """
     Gera um edge_index conectando textos que compartilham entidades nomeadas e salva um arquivo
@@ -178,7 +220,7 @@ def yake_graph(df, text_column, log_file='yake_graph_connections.txt'):
 #     edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
 #     return edge_index
 
-def embedding_sim_graphs(df, text_column, embedding='word2vec', similarity='cosine', k_neighbors=3):
+def embedding_sim_graphs(df, text_column, embedding='word2vec', similarity='cosine', k_neighbors=3, model = None, tokenizer = None):
     # TODO: fazer um embedding usando bert
     """
     Gera um grafo a partir de embeddings dos textos com base em k vizinhos mais próximos.
@@ -224,8 +266,8 @@ def embedding_sim_graphs(df, text_column, embedding='word2vec', similarity='cosi
         d2v_model.train(tagged_docs, total_examples=d2v_model.corpus_count, epochs=d2v_model.epochs)
         vectors = np.array([d2v_model.infer_vector(doc.words) for doc in tagged_docs])
 
-    elif embedding == 'llm':
-        raise NotImplementedError("Processamento com LLM ainda não foi implementado.")
+    elif embedding == 'bert':
+        vectors = bert_embeddings(model, tokenizer, texts)
 
     else:
         raise ValueError("Tipo de embedding inválido. Use 'word2vec', 'doc2vec' ou 'llm'.")

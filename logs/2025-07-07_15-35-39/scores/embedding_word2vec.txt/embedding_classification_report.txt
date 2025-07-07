@@ -1,0 +1,11 @@
+=== Relatório de Classificação embedding===
+              precision    recall  f1-score   support
+
+          -1       0.69      0.72      0.71      1800
+           1       0.71      0.68      0.70      1800
+
+    accuracy                           0.70      3600
+   macro avg       0.70      0.70      0.70      3600
+weighted avg       0.70      0.70      0.70      3600
+
+F1 Score (ponderado): 0.7007

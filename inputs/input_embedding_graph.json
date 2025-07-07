@@ -1,4 +1,4 @@
 {
-    "benchmark_dataset_path" : "dataset/2-cleaned_gemini.tsv",
+    "benchmark_dataset_path" : "dataset/FakeBRCorpus.tsv",
     "graph_generator" : "embedding"
 }

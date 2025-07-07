@@ -2,25 +2,37 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import os
 
-def evaluate_graph(edge_index, num_nodes, classes, metric='density', plot_path='degree_distribution.png'):
+import os
+import networkx as nx
+import matplotlib.pyplot as plt
+
+def evaluate_graph(edge_index, num_nodes, classes, plot_path='degree_distribution.png'):
     """
-    Avalia métricas de um grafo a partir do edge_index.
+    Avalia múltiplas métricas de um grafo a partir do edge_index.
 
     Parâmetros:
     -----------
     edge_index : torch.Tensor
         Tensor [2, num_edges] com as conexões do grafo.
 
-    metric : str
-        Métrica a ser calculada: 'assortativity', 'node_degree', 'modularity' ou 'density'.
+    num_nodes : int
+        Número de nós do grafo.
+
+    classes : list or array-like
+        Lista com as classes de cada nó (usado na assortatividade).
 
     plot_path : str
-        Caminho do arquivo para salvar o gráfico de distribuição de grau (apenas para 'node_degree').
+        Caminho do arquivo para salvar o gráfico de distribuição de grau.
 
     Retorna:
     --------
-    Se metric == 'node_degree': caminho do gráfico salvo (str).
-    Caso contrário: valor da métrica (float).
+    dict com as métricas:
+        - 'assortativity'
+        - 'density'
+        - 'modularity'
+        - 'num_connected_components'
+        - 'num_edges'
+        - 'degree_plot_path'
     """
     # Constrói o grafo
     G = nx.Graph()
@@ -31,42 +43,42 @@ def evaluate_graph(edge_index, num_nodes, classes, metric='density', plot_path='
     for idx, c in enumerate(classes):
         G.nodes[idx]['classe'] = c
 
-    if metric == 'assortativity':
-        # Assortatividade por grau
-        value = nx.degree_assortativity_coefficient(G, 'classe')
-        return value
+    # Assortatividade por classe
+    assortativity = nx.degree_assortativity_coefficient(G, 'classe')
 
-    elif metric == 'density':
-        # Densidade do grafo
-        value = nx.density(G)
-        return value
+    # Densidade
+    density = nx.density(G)
 
-    elif metric == 'modularity':
-        try:
-            import community as community_louvain
-        except ImportError:
-            raise ImportError("A biblioteca 'python-louvain' é necessária para calcular a modularidade. Instale-a via pip.")
-        # Calcula a partição das comunidades usando Louvain
+    # Modularidade (requer python-louvain)
+    try:
+        import community as community_louvain
         partition = community_louvain.best_partition(G)
-        # Calcula a modularidade
         modularity = community_louvain.modularity(partition, G)
-        return modularity
+    except ImportError:
+        modularity = None  # ou lance um erro, se preferir
 
-    elif metric == 'node_degree':
-        # Distribuição de grau
-        degrees = [degree for node, degree in G.degree()]
-        plt.figure(figsize=(8, 6))
-        plt.hist(degrees, bins=range(1, max(degrees)+2), align='left', edgecolor='black')
-        plt.xlabel("Grau do nó")
-        plt.ylabel("Número de nós")
-        # plt.title("Distribuição de Grau dos Nós")
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.tight_layout()
+    # Número de componentes conexas
+    num_components = nx.number_connected_components(G)
 
-        # Salva o gráfico
-        plt.savefig(plot_path)
-        plt.close()
-        return os.path.abspath(plot_path)
+    # Número de arestas
+    num_edges = G.number_of_edges()
 
-    else:
-        raise ValueError("Métrica não reconhecida. Use: 'assortativity', 'node_degree', 'modularity' ou 'density'.")
+    # Plot da distribuição de grau
+    degrees = [degree for _, degree in G.degree()]
+    plt.figure(figsize=(8, 6))
+    plt.hist(degrees, bins=range(1, max(degrees)+2), align='left', edgecolor='black')
+    plt.xlabel("Grau do nó")
+    plt.ylabel("Número de nós")
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig(plot_path)
+    plt.close()
+
+    return {
+        'assortativity': assortativity,
+        'density': density,
+        'modularity': modularity,
+        'num_connected_components': num_components,
+        'num_edges': num_edges,
+        'degree_plot_path': os.path.abspath(plot_path)
+    }
