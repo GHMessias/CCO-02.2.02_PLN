@@ -20,3 +20,14 @@ Tarefa 2: Gerar um grafo onde vértices são os textos e arestas são algumas re
 # Trabalho 1
 
 Para o seminário 1 a ideia é aplicar uma sample dos dados. Selecionar uns 10 textos, limpá-los manualmente e comparar com algumas das técnicas, apresentando os resultados. A mesma coisa para a geração de grafos, gerar grafos com essas 10 samples e avaliar quantidade de arestas, componentes conexas, etc.
+
+# Trabalho 2
+
+No trabalho 2 avaliamos extrinsecamente a tarefa de detecção de notícias falsas, utilizando o conjunto de dados FactCheckedNews e informações dos dados em grafos. Os resultados obtidos mostraram que a abordagem do grafo por reconhecimento de entidades nomeadas traz benefícios para o classificador, demonstrando eficiência na aplicação das técnicas de PLN que aprendemos na disciplina.
+
+Gabriel Spolon
+Guilherme Messias
+Maylon Martins de Melo
+Natanael F. D. Batista 
+Rafael Martins C. Andrade
+Vinícius Perillo
