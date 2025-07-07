@@ -10,3 +10,4 @@ torch_geometric
 igraph
 seaborn
 pycairo
+ollama

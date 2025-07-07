@@ -37,6 +37,9 @@ def REM_graph(df, text_column='news', threshold=5, log_file='graph_connections.t
     """
     nlp = spacy.load("pt_core_news_sm")
 
+    paths = df["path"].tolist()
+
+
     # Extrai entidades nomeadas de cada texto
     entity_sets = []
     for text in df[text_column]:
@@ -57,7 +60,7 @@ def REM_graph(df, text_column='news', threshold=5, log_file='graph_connections.t
                 edges.append((j, i))  # Grafo não direcionado
 
                 # Salva justificativa
-                f.write(f"Conexão entre {i} e {j} - Entidades em comum: {', '.join(common_entities)}\n")
+                f.write(f"Conexão entre:\n  {paths[i]}\n  {paths[j]}\n  Palavras-chave em comum: {', '.join(common_entities)}\n\n")
 
     if not edges:
         raise ValueError("Nenhuma conexão encontrada com o threshold especificado.")
@@ -67,13 +70,13 @@ def REM_graph(df, text_column='news', threshold=5, log_file='graph_connections.t
 
 def yake_graph(df, text_column, log_file='yake_graph_connections.txt'):
     """
-    Gera um grafo entre textos baseado em sobreposição de palavras-chave extraídas pelo YAKE e
-    salva um arquivo de justificativas.
+    Gera um grafo entre textos baseado em sobreposição de palavras-chave extraídas pelo YAKE
+    e salva um arquivo de justificativas usando o caminho (coluna 'path') de cada texto.
 
     Parâmetros:
     -----------
     df : pandas.DataFrame
-        DataFrame contendo os textos a serem analisados.
+        DataFrame contendo os textos e a coluna 'path'.
 
     text_column : str
         Nome da coluna do DataFrame que contém os textos.
@@ -87,7 +90,6 @@ def yake_graph(df, text_column, log_file='yake_graph_connections.txt'):
         Tensor [2, num_edges] com as conexões entre os textos baseadas em palavras-chave relevantes.
     """
     def extract_keywords(text, ngram_range=(2,3), top_k=5):
-        # Extrai n-gramas (até trigramas)
         custom_kw_extractor = yake.KeywordExtractor(
             lan="pt",
             n=ngram_range[1],
@@ -95,32 +97,86 @@ def yake_graph(df, text_column, log_file='yake_graph_connections.txt'):
             features=None
         )
         keywords = custom_kw_extractor.extract_keywords(text)
-        # Filtra apenas n-gramas desejados (1 a 3 palavras)
         selected = [kw for kw, score in keywords if len(kw.split()) in range(ngram_range[0], ngram_range[1]+1)]
         return set(selected)
 
-    # Passo 1: extrair n-gramas relevantes
     keyword_sets = df[text_column].apply(lambda txt: extract_keywords(txt)).tolist()
+    paths = df["path"].tolist()
 
-    # Inicializa o arquivo de justificativas
+    edges = []
     with open(log_file, 'w', encoding='utf-8') as f:
         f.write("Justificativas de conexões no grafo (baseadas em palavras-chave YAKE):\n\n")
 
-        # Passo 2: comparar cada par e gerar justificativas
-        edges = []
         for i, j in combinations(range(len(keyword_sets)), 2):
             common_keywords = keyword_sets[i] & keyword_sets[j]
-            if common_keywords:  # interseção não vazia
+            if common_keywords:
                 edges.append((i, j))
                 edges.append((j, i))  # grafo não direcionado
-                f.write(f"Conexão entre {i} e {j} - Palavras-chave em comum: {', '.join(common_keywords)}\n")
+                f.write(f"Conexão entre:\n  {paths[i]}\n  {paths[j]}\n  Palavras-chave em comum: {', '.join(common_keywords)}\n\n")
 
     if not edges:
         raise ValueError("Nenhuma conexão entre os textos encontrada com os critérios definidos.")
 
-    # Passo 3: transformar em edge_index
     edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
     return edge_index
+
+
+# def yake_graph(df, text_column, log_file='yake_graph_connections.txt'):
+#     """
+#     Gera um grafo entre textos baseado em sobreposição de palavras-chave extraídas pelo YAKE e
+#     salva um arquivo de justificativas.
+
+#     Parâmetros:
+#     -----------
+#     df : pandas.DataFrame
+#         DataFrame contendo os textos a serem analisados.
+
+#     text_column : str
+#         Nome da coluna do DataFrame que contém os textos.
+
+#     log_file : str
+#         Nome do arquivo de saída para salvar as justificativas.
+
+#     Retorna:
+#     --------
+#     edge_index : torch.Tensor
+#         Tensor [2, num_edges] com as conexões entre os textos baseadas em palavras-chave relevantes.
+#     """
+#     def extract_keywords(text, ngram_range=(2,3), top_k=5):
+#         # Extrai n-gramas (até trigramas)
+#         custom_kw_extractor = yake.KeywordExtractor(
+#             lan="pt",
+#             n=ngram_range[1],
+#             top=top_k,
+#             features=None
+#         )
+#         keywords = custom_kw_extractor.extract_keywords(text)
+#         # Filtra apenas n-gramas desejados (1 a 3 palavras)
+#         selected = [kw for kw, score in keywords if len(kw.split()) in range(ngram_range[0], ngram_range[1]+1)]
+#         return set(selected)
+
+#     # Passo 1: extrair n-gramas relevantes
+#     keyword_sets = df[text_column].apply(lambda txt: extract_keywords(txt)).tolist()
+
+#     # Inicializa o arquivo de justificativas
+#     with open(log_file, 'w', encoding='utf-8') as f:
+#         f.write("Justificativas de conexões no grafo (baseadas em palavras-chave YAKE):\n\n")
+
+#         # Passo 2: comparar cada par e gerar justificativas
+#         edges = []
+#         for i, j in combinations(range(len(keyword_sets)), 2):
+#             common_keywords = keyword_sets[i] & keyword_sets[j]
+#             if common_keywords:  # interseção não vazia
+#                 edges.append((i, j))
+#                 edges.append((j, i))  # grafo não direcionado
+#                 f.write(f"Conexão entre {i} e {j} - Palavras-chave em comum: {', '.join(common_keywords)}\n")
+
+#     if not edges:
+#         raise ValueError("Nenhuma conexão entre os textos encontrada com os critérios definidos.")
+
+#     # Passo 3: transformar em edge_index
+#     edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
+#     return edge_index
 
 def embedding_sim_graphs(df, text_column, embedding='word2vec', similarity='cosine', k_neighbors=3):
     # TODO: fazer um embedding usando bert
@@ -207,7 +263,7 @@ def feature_gen(df, text_column, embedding='word2vec'):
     # Geração dos embeddings
     if embedding == 'word2vec':
         tokenized = [text.split() for text in texts]
-        w2v_model = Word2Vec(sentences=tokenized, vector_size=100, window=5, min_count=1, workers=4)
+        w2v_model = Word2Vec(sentences=tokenized, vector_size=100, window=3, min_count=1, workers=4)
         vectors = np.array([
             np.mean([w2v_model.wv[word] for word in words if word in w2v_model.wv], axis=0)
             if any(word in w2v_model.wv for word in words) else np.zeros(w2v_model.vector_size)

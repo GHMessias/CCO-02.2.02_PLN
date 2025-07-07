@@ -89,7 +89,7 @@ if args.benchmark:
     if args.graph_generator == 'yake':
         edge_index = yake_graph(df, 'news', log_file=f'logs/{data_execucao}/log_conexao_yake.txt')
     if args.graph_generator == 'ren':
-        edge_index = REM_graph(df, 'news', log_file=f'logs/{data_execucao}/log_conexao_ren.txt')
+        edge_index = REM_graph(df, 'news', log_file=f'logs/{data_execucao}/log_conexao_ren.txt', threshold=5)
     if args.graph_generator == 'embedding':
         if args.embedding_graph_mode == 'word2vec':
             edge_index = embedding_sim_graphs(df = df, text_column= 'news', embedding='word2vec')
@@ -119,7 +119,7 @@ if args.benchmark:
         model = GAE(encoder = encoder)
         # TODO: colocar a learning rate (lr) e as epocas como parâmetros no args
         optimizer = torch.optim.Adam(params=model.parameters(), lr = 0.001)
-        epochs = 200 
+        epochs = 100 
         train_gae(data = graph_data, gae_model = model, optimizer = optimizer, epochs = epochs)
 
         graph_data.x = model.encode(x, edge_index)

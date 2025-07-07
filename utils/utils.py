@@ -141,7 +141,7 @@ def train_gae(data, gae_model, optimizer, epochs, verbose = False):
             optimizer.step()
     return
 
-def train_and_evaluate_svm(x: torch.Tensor, y: torch.Tensor, modelname: str, path: str, test_size=0.5, random_seed=100):
+def train_and_evaluate_svm(x: torch.Tensor, y: torch.Tensor, modelname: str, path: str, test_size=0.5, random_seed=None):
     """
     Divide os dados em treino e teste, treina uma SVM e salva o relatório de classificação em um arquivo de texto.
 

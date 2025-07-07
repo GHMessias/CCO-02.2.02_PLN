@@ -1,0 +1,11 @@
+Faça um tratamento no texto abaixo, considerando esses pontos:
+
+1. Remover links
+2. Reescrever com a letra certa palavras com letra maiúscula desnecessárias
+3. Remover aspas duplas (manter aspas simples caso seja citação)
+4. Corrigir palavras aglutinadas
+5. Corrigir erros de digitação
+6. Remover pontuação indevida (incluindo hashtags e asterisco)
+7. Traduzir palavra (fake -> falso, etc.)
+
+Faça isso para o seguinte texto:

@@ -1,4 +1,4 @@
 {
-    "benchmark_dataset_path" : "dataset/llm_processed_data.tsv",
+    "benchmark_dataset_path" : "dataset/2-cleaned_gemini.tsv",
     "graph_generator" : "ren"
 }

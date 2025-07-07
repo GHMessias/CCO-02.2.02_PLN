@@ -1,0 +1,45 @@
+Agora que conseguimos tratar os textos para classificação, vamos aplicar a detecção das notícias verdadeiras e falsas.
+
+Baseando nos resultados obtidos por Caravanti et. al (2021) (colocar mais citações) utilizar relações entre os textos no contexto de detecção de notícias falsas é vantajoso. 
+
+A grande pergunta que queremos responder é: Como estabelecer relações entre os textos?
+
+No contexto de análise de redes sociais, podemos linkar esses textos a partir de usuários. Porém, no nosso problema, não conseguimos essa relação. A resposta mais utilizada na literatura é: *ligar os textos por meio de embedding de palavras* a partir de um k fixo, ou seja, cada texto será linkado com seu vizinho mais próximo a partir de um embedding word2vec.
+
+Essa abordagem, apesar de amplamente estudada pela literatura, levanta uma questão: Seria essa a melhor forma de estabelecer relações entre os textos?
+
+A resposta parcial dessa pergunta pode ser obtida a partir das técnicas de PLN que aprendemos na disciplina. Para isso, vamos usar outras duas abordagens comparativas
+
+-> Gerando um grafo a partir de palavras-chave.
+
+Utilizaremos o algoritmo Yake! para criar as arestas do nosso grafo.
+
+Cada texto será ligado a partir das palavras chave obtidas
+
+<Exemplo de texto na tela, primeiras palavras até encontrar uma palavra em comum>
+
+<Exemplo de um grafo com arestas onde os textos são ligados pelo yake!, do lado dele a imagem do grafo completo>
+
+-> Gerando um grafo a partir do reconhecimento de entidades nomeadas
+
+Utilizaremos um algoritmo para encontrar as entidades nomeadas. Se dois textos tem mais do que um limiar em comum de entidades, uma relação é gerada entre eles
+
+Cada texto será ligado a partir das palavras chave obtidas
+
+<Exemplo de texto na tela, primeiras palavras até encontrar uma entidade nomeada em comum>
+
+<Exemplo de um grafo com arestas onde os textos são ligados pelas ENs, do lado dele a imagem do grafo completo>
+
+Agora que temos três maneiras de relacionar os textos, vamos aplicar um algoritmo para gerar novas representações desse grafo
+
+Rede Neural em Grafos
+
+<Colocar um desenho da entrada do vetor que representa o texto, uma caixa preta, saída de novas representações, explicar que essa parte sai do escopo da disciplina e entra em algoritmos de ML, mas a ideia é simples.>
+
+Avaliação extrínseca -> Aplicando uma SVM simples para classificar os dados, vemos que os dados usados de maneira original tem uma performance boa, porém inferior a alguns dos modelos de grafos utilizados.
+
+Avaliação dos grafos -> Node Degree distribution
+
+Avaliação das features -> plot 2d
+
+
